@@ -9,7 +9,7 @@ Matrix = NewType('Matrix', Union[List[List[Any]], List[str]])
 def print_matrix(rows: Matrix):
     for row in rows:
         for i in row:
-            print(i, end=' ')
+            print(i, end='  ')
         print()
 
 
