@@ -1,4 +1,5 @@
 #  coding: utf-8
+import argparse
 from typing import List
 
 from pygad import GA
@@ -6,13 +7,13 @@ from pygad import GA
 from convert_data import agglomerate_bits_from_bit_line
 from display_data import print_matrix
 
-LINHAS = 7
+LINHAS = 3
 COLUNAS = 7
 
 
 def fit(bit_line: List[int], debug=False):
-    rows = agglomerate_bits_from_bit_line(bit_line, COLUNAS)
-    column_wrongness = [-1] * COLUNAS
+    rows = agglomerate_bits_from_bit_line(bit_line, 7)
+    column_validity = [0] * COLUNAS
     row_validity = [0] * LINHAS
     column_sums = [0] * COLUNAS
 
@@ -24,9 +25,20 @@ def fit(bit_line: List[int], debug=False):
             j += 1
 
     for i in range(COLUNAS):
-        column_wrongness[i] += column_sums[i]
+        if column_sums[i] > 1:
+            column_validity[i] = -column_sums[i]
+        else:
+            column_validity[i] = column_sums[i]
 
-    return sum(row_validity) - sum(column_wrongness)
+    fitness = sum(row_validity) + sum(column_validity)
+
+    if debug:
+        print(f"Validade das linhas: {row_validity}")
+        print(f"Validade das colunas: {column_validity}")
+        print(fitness)
+        print_matrix(rows)
+
+    return fitness
 
 
 def fitness_func(ga_instance: GA, solution, solution_idx: int):
@@ -64,16 +76,24 @@ def main():
     ga_instance = GA(**ga_config)
     ga_instance.run()
     solution, solution_fitness, solution_idx = ga_instance.best_solution()
-    # test_solution = [
-    #     1, 0, 0, 0, 1, 0, 0,
-    #     0, 1, 0, 0, 0, 1, 0,
-    #     0, 0, 1, 0, 0, 0, 1,
-    #     0, 0, 0, 1, 0, 0, 0,
-    # ]
-    print_matrix(agglomerate_bits_from_bit_line(solution, COLUNAS))
-    print("Fitness: " + str(solution_fitness))
+    fit(solution, debug=True)
     # ga_instance.plot_fitness()
 
 
+def arguments():
+    parser = argparse.ArgumentParser(prog='GA de Timetable')
+    parser.add_argument('--test', action='store_true', help='Testa a função de fitness com uma matriz pré definida')
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    main()
+    args = arguments()
+    if args.test:
+        test_solution = [
+            1, 0, 0, 1, 1, 0, 0,
+            0, 1, 0, 0, 0, 1, 0,
+            0, 0, 1, 0, 0, 0, 1,
+        ]
+        fit(test_solution, debug=True)
+    else:
+        main()
