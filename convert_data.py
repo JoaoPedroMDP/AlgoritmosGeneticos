@@ -18,3 +18,15 @@ def agglomerate_bits_from_bit_line(bit_line: List[int], group_size: int) -> List
         final_groups.append(bit_line[i:i + group_size])
 
     return final_groups
+
+
+def translate_values(values: List[any], translation_dict: dict[any, any]) -> List[any]:
+    return [translation_dict[val] for val in values]
+
+
+def to_dataframe(matrix: List[List[any]], columns: List[str] = None, index: List[str] = None):
+    columns = columns or []
+    index = index or []
+
+    from pandas import DataFrame
+    return DataFrame.from_records(matrix, columns=columns, index=index)
