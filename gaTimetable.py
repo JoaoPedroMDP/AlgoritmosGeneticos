@@ -16,25 +16,35 @@ def fit(bit_line: List[int], debug=False):
     column_validity = [0] * COLUNAS
     row_validity = [0] * LINHAS
     column_sums = [0] * COLUNAS
+    row_sums = [0] * LINHAS
 
     for i in range(LINHAS):
-        row_validity[i] = 1 if sum(rows[i]) > 0 else -1
+        row_sums[i] = sum(rows[i])
         j = 0
         while j < COLUNAS:
             column_sums[j] += rows[i][j]
             j += 1
 
     for i in range(COLUNAS):
-        if column_sums[i] > 1:
-            column_validity[i] = -column_sums[i]
-        else:
-            column_validity[i] = column_sums[i]
+        column_validity[i] = 1 - abs(1 - column_sums[i])
+
+    for i in range(LINHAS):
+        # Essa conta doida aí serve pra calcular o quão diferente a soma de uma linha é da soma das outras linhas
+        # Meu objetivo com ela é distrbuir os números '1' da maneira mais uniforme possível
+
+        # 'diff_from_row_sum_average': Diferença do valor da linhas atual para a média das somas das linhas
+        diff_from_row_sum_average = abs(sum(row_sums)/LINHAS - row_sums[i])
+
+        # Ali no final eu divido por 'row_sums[i]' pra normalizar o valor, e não adicionar um peso muito grande para a soma das linhas
+        # Se não faço essa divisão, o GA acha que quanto maior a soma da linha, melhor, mesmo que a soma das colunas fique maior que 1
+        row_validity[i] = (row_sums[i] - diff_from_row_sum_average) / row_sums[i]
 
     fitness = sum(row_validity) + sum(column_validity)
 
     if debug:
         print(f"Validade das linhas: {row_validity}")
         print(f"Validade das colunas: {column_validity}")
+        print(f"Soma das colunas: {column_sums}")
         print(fitness)
         print_matrix(rows)
 
@@ -61,8 +71,12 @@ def main():
         "gene_type": int,
         # Espaço de busca do gene
         "gene_space": {"low": 0, "high": 2},
+
         # Tipo de seleção dos pais
+        # SSS significa "Steady-State Selection". Os piores cromossomos são substituídos pelos filhos gerados
+        # pelo cruzamento dos melhores cromossomos
         "parent_selection_type": "sss",
+
         # Elitismo (top X soluções será mantido)
         "keep_elitism": 25,
         # Tipo do crossover
