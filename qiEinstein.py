@@ -2,6 +2,9 @@
 import numpy as np
 from pygad import GA
 
+from convert_data import agglomerate_bits_from_bit_line, translate_values
+from display_data import print_matrix_as_datraframe
+from ga_qiEinstein import I_TRANSLATION_DICT, COLUMNS, ROWS
 from ga_qiEinstein.fit_func import fit
 from ga_qiEinstein.pygad_config import PYGAD_CONFIG
 
@@ -14,7 +17,7 @@ def main():
 
 
 if __name__ == '__main__':
-    if True:
+    if False:
         sol = np.array([1, 2, 5, 4, 3, 9, 7, 8, 6, 10, 11, 14, 15, 12, 13, 18, 16, 19, 20, 17, 23, 22, 24, 25, 21])
         print(fit(sol))
         exit(1)
@@ -24,8 +27,8 @@ if __name__ == '__main__':
     max_sol_fit = -100
     num_of_executions = 30
     sol_fit = -10
-    while sol_fit != 0:
-    # for i in range(num_of_executions):
+    # while sol_fit != 0:
+    for i in range(num_of_executions):
         sol, sol_fit, ga_int = main()
         avg_sol_fit += sol_fit
         if sol_fit < min_sol_fit:

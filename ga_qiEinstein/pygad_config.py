@@ -10,7 +10,7 @@ PYGAD_CONFIG: dict = {
     # Quantidade de soluções escolhidas para participarem do conjunto de reprodução
     "num_parents_mating": 10,
     # Quantas soluções terão por geração
-    "sol_per_pop": 100,
+    "sol_per_pop": 200,
     # Numero de parâmetros da função
     "num_genes": 25,
     # Tipo do gene
@@ -32,7 +32,7 @@ PYGAD_CONFIG: dict = {
     # Substituir o gene mutado pelo gene substituto, e não apenas somar um valor random
     "mutation_by_replacement": True,
     # Porcentagem de genes que serão mutados
-    "mutation_percent_genes": 5,
+    "mutation_percent_genes": 10,
     # Permitir duplicatas
     "allow_duplicate_genes": False,
     # Isto otimiza o programa. Se o fitness não mudar por X gerações, o programa para.
