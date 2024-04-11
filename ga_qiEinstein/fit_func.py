@@ -25,7 +25,7 @@ def fit(bitline: np.ndarray, debug=False):
 
     # Regra 1: Norueguês na casa 0
     norwish_house_index = locate_house(mtrx, 'Nacionalidade', 'NORUEGUES')
-    error += norwish_house_index - 0
+    error += (norwish_house_index - 0)
 
     # Regra 2: Inglês na casa vermelha
     red_house_index = locate_house(mtrx, 'Cor', 'VERMELHO')
@@ -92,6 +92,11 @@ def fit(bitline: np.ndarray, debug=False):
     error += abs(abs(blend_house_index - water_house_index) - 1)
 
     return - error
+
+
+def fit_straightforward(bitline: np.ndarray, debug=False):
+    mtrx = agglomerate_bits_from_bit_line(bitline, 5)
+    error = 0
 
 
 def fitness_func(ga_instance: GA, solution, solution_idx: int):
