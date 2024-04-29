@@ -15,7 +15,7 @@ COMPLEX_FIGURES = [
 
 RANDOM_POINTS = True
 if RANDOM_POINTS:
-    FIGURE = -1
+    FIGURE = 0
     if FIGURE >= 0:
         POINTS = COMPLEX_FIGURES[FIGURE]
     else:
