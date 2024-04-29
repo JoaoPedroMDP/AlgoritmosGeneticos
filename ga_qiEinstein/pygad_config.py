@@ -16,7 +16,7 @@ PYGAD_CONFIG: dict = {
     # MT: Tipo da mutação
     "mutation_type": 'random',
     # MPG: Porcentagem de genes que serão mutados
-    "mutation_percent_genes": 10,
+    "mutation_percent_genes": 6,
 
     # Função de avaliação
     "fitness_func": fitness_func,
@@ -35,5 +35,5 @@ PYGAD_CONFIG: dict = {
     # Permitir duplicatas
     "allow_duplicate_genes": False,
     # Isto otimiza o programa. Se o fitness não mudar por X gerações, o programa para.
-    "stop_criteria": "saturate_70",
+    "stop_criteria": "saturate_40",
 }

@@ -22,10 +22,11 @@ if __name__ == '__main__':
         print(fit(sol))
         exit(1)
 
+    best_sol_avg = 0
     avg_sol_fit = 0
     min_sol_fit = 100
     max_sol_fit = -100
-    num_of_executions = 5
+    num_of_executions = 30
     sol_fit = -10
     # while sol_fit != 0:
     for i in range(num_of_executions):
@@ -37,15 +38,14 @@ if __name__ == '__main__':
             max_sol_fit = sol_fit
 
         print("Fitness: ", sol_fit)
-        if sol_fit >= -1:
+        if sol_fit >= 0:
+            best_sol_avg += 1
             ga_int.plot_fitness()
             print(sol)
-            translated = agglomerate_bits_from_bit_line(
-                translate_values(sol, I_TRANSLATION_DICT),
-                5
-            )
+            translated = agglomerate_bits_from_bit_line(translate_values(sol, I_TRANSLATION_DICT),5)
             print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
 
     print("Média de fitness: ", avg_sol_fit/num_of_executions)
     print("Menor fitness: ", min_sol_fit)
     print("Maior fitness: ", max_sol_fit)
+    print("Media de melhores soluções: ", best_sol_avg/num_of_executions)
