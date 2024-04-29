@@ -35,14 +35,16 @@ if __name__ == '__main__':
             min_sol_fit = sol_fit
         if sol_fit > max_sol_fit:
             max_sol_fit = sol_fit
-        ga_int.plot_fitness()
+
         print("Fitness: ", sol_fit)
-        print(sol)
-        translated = agglomerate_bits_from_bit_line(
-            translate_values(sol, I_TRANSLATION_DICT),
-            5
-        )
-        print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
+        if sol_fit >= -1:
+            ga_int.plot_fitness()
+            print(sol)
+            translated = agglomerate_bits_from_bit_line(
+                translate_values(sol, I_TRANSLATION_DICT),
+                5
+            )
+            print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
 
     print("Média de fitness: ", avg_sol_fit/num_of_executions)
     print("Menor fitness: ", min_sol_fit)
