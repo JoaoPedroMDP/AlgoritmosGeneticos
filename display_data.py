@@ -19,7 +19,7 @@ def print_integers_as_matrix_of_bits(rows: List[int]):
     print_matrix(bits)
 
 
-def print_matrix_as_datraframe(matrix: Matrix, columns: List[str], index: List[str]):
+def print_matrix_as_dataframe(matrix: Matrix, columns: List[str], index: List[str]):
     from pandas import DataFrame
     print(DataFrame.from_records(matrix, columns=columns, index=index))
 

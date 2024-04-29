@@ -3,7 +3,7 @@ import numpy as np
 from pygad import GA
 
 from convert_data import agglomerate_bits_from_bit_line, translate_values
-from display_data import print_matrix_as_datraframe
+from display_data import print_matrix_as_dataframe
 from ga_qiEinstein import I_TRANSLATION_DICT, COLUMNS, ROWS
 from ga_qiEinstein.fit_func import fit
 from ga_qiEinstein.pygad_config import PYGAD_CONFIG
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     avg_sol_fit = 0
     min_sol_fit = 100
     max_sol_fit = -100
-    num_of_executions = 30
+    num_of_executions = 5
     sol_fit = -10
     # while sol_fit != 0:
     for i in range(num_of_executions):
@@ -35,16 +35,14 @@ if __name__ == '__main__':
             min_sol_fit = sol_fit
         if sol_fit > max_sol_fit:
             max_sol_fit = sol_fit
-        # ga_int.plot_fitness()
+        ga_int.plot_fitness()
         print("Fitness: ", sol_fit)
-
-        if sol_fit == 0:
-            print(sol)
-            translated = agglomerate_bits_from_bit_line(
-                translate_values(sol, I_TRANSLATION_DICT),
-                5
-            )
-            print_matrix_as_datraframe(translated, columns=COLUMNS, index=ROWS)
+        print(sol)
+        translated = agglomerate_bits_from_bit_line(
+            translate_values(sol, I_TRANSLATION_DICT),
+            5
+        )
+        print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
 
     print("Média de fitness: ", avg_sol_fit/num_of_executions)
     print("Menor fitness: ", min_sol_fit)
