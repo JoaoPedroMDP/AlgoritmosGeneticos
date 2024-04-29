@@ -6,17 +6,17 @@ PYGAD_CONFIG: dict = {
     # NG: Quantas gerações serão simuladas
     "num_generations": 100,
     # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
-    "num_parents_mating": 10,
+    "num_parents_mating": 50,
     # SPP: Quantas soluções terão por geração
     "sol_per_pop": 200,
     # KE: Elitismo (top X soluções será mantido)
-    "keep_elitism": 20,
+    "keep_elitism": 50,
     # CT: Tipo do crossover
     "crossover_type": "scattered",
     # MT: Tipo da mutação
     "mutation_type": 'random',
     # MPG: Porcentagem de genes que serão mutados
-    "mutation_percent_genes": 2,
+    "mutation_percent_genes": 10,
 
     # Função de avaliação
     "fitness_func": fitness_func,
@@ -35,5 +35,5 @@ PYGAD_CONFIG: dict = {
     # Permitir duplicatas
     "allow_duplicate_genes": False,
     # Isto otimiza o programa. Se o fitness não mudar por X gerações, o programa para.
-    "stop_criteria": "saturate_10",
+    "stop_criteria": "saturate_70",
 }
