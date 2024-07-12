@@ -30,24 +30,26 @@ def main():
         mutation_by_replacement=True,
         allow_duplicate_genes=False,
     )
+    print(f"Coordenadas: {POINT_COUNT}")
     ga_instance.run()
     solution, solution_fitness, solution_idx = ga_instance.best_solution()
     return solution, solution_fitness
 
 
 if __name__ == '__main__':
-    teste = [7, 0, 14, 5,  1, 23, 12, 29, 22, 24, 21, 13, 10,  6, 27, 16, 15, 17, 18,  8, 26, 19, 20, 4, 11,  9,  2, 25,  3, 28]
-    for point in teste:
-        print(point, POINTS[point])
-    solution_point_order = [POINTS[i] for i in teste]
-    print(solution_point_order)
-    trace_route_between_points(solution_point_order)
-    exit(1)
+    # teste = [ 4, 11, 2, 23, 13, 21, 12, 29, 22, 3, 8, 26, 18, 20, 14, 7, 0, 9, 1, 5, 16, 6, 27, 19, 28, 25, 24, 17, 10, 15]
+    # for point in teste:
+    #     print(point, POINTS[point])
+    # solution_point_order = [POINTS[i] for i in teste]
+    # print(solution_point_order)
+    # print(fit(teste))
+    # trace_route_between_points(solution_point_order)
+    # exit(1)
 
     avg_sol_fit = 0
     min_sol_fit = 100
     max_sol_fit = -100000
-    num_of_executions = 1
+    num_of_executions = 3
     i = 0
     sol_fit = 0
     best_sol = []

@@ -6,22 +6,22 @@ COLORS = {"AMARELO": 1, "AZUL": 2, "BRANCO": 3, "VERDE": 4, "VERMELHO": 5}
 I_COLORS = {v: k for k, v in COLORS.items()}
 
 # CIDADANIAS
-NACIONALITIES = {"ALEMAO": 6, "DINAMARQUES": 7, "INGLES": 8, "NORUEGUES": 9, "SUECO": 10}
+NACIONALITIES = {"ALEMAO": 1, "DINAMARQUES": 2, "INGLES": 3, "NORUEGUES": 4, "SUECO": 5}
 I_NACIONALITIES = {v: k for k, v in NACIONALITIES.items()}
 
 # BEBIDAS
-DRINKS = {"AGUA": 11, "CAFE": 12, "CERVEJA": 13, "CHA": 14, "LEITE": 15}
+DRINKS = {"AGUA": 1, "CAFE": 2, "CERVEJA": 3, "CHA": 4, "LEITE": 5}
 I_DRINKS = {v: k for k, v in DRINKS.items()}
 
 # CIGARROS
-CIGARS = {"BLEND": 16, "BLUEMASTER": 17, "DUNHILL": 18, "PALLMALL": 19, "PRINCE": 20}
+CIGARS = {"BLEND": 1, "BLUEMASTER": 2, "DUNHILL": 3, "PALLMALL": 4, "PRINCE": 5}
 I_CIGARS = {v: k for k, v in CIGARS.items()}
 
 # ANIMAIS
-ANIMALS = {"CACHORRO": 21, "CAVALO": 22, "GATO": 23, "PASSARO": 24, "PEIXE": 25}
+ANIMALS = {"CACHORRO": 1, "CAVALO": 2, "GATO": 3, "PASSARO": 4, "PEIXE": 5}
 I_ANIMALS = {v: k for k, v in ANIMALS.items()}
 
-I_TRANSLATION_DICT = {**I_COLORS, **I_NACIONALITIES, **I_DRINKS, **I_CIGARS, **I_ANIMALS}
+TRANSLATION_DICTS = [I_COLORS, I_NACIONALITIES, I_DRINKS, I_CIGARS, I_ANIMALS]
 
 # Espaços de geração de cada gene baseado no seu tipo
 # COLOR_GENE_SPACE
@@ -34,13 +34,6 @@ DGS = {"low": DRINKS['AGUA'], "high": DRINKS['LEITE']+1}
 CiGS = {"low": CIGARS['BLEND'], "high": CIGARS['PRINCE']+1}
 # PET_GENE_SPACE
 PGS = {"low": ANIMALS['CACHORRO'], "high": ANIMALS['PEIXE']+1}
-
-# Espaços finais de criação dos genes
-COLOR_SPACE = [CGS, CGS, CGS, CGS, CGS]
-NACIONALITY_SPACE = [NGS, NGS, NGS, NGS, NGS]
-DRINK_SPACE = [DGS, DGS, DGS, DGS, DGS]
-CIGAR_SPACE = [CiGS, CiGS, CiGS, CiGS, CiGS]
-PET_SPACE = [PGS, PGS, PGS, PGS, PGS]
 
 COLUMNS = ["Casa 0", "Casa 1", "Casa 2", "Casa 3", "Casa 4"]
 ROWS = ["Cor", "Nacionalidade", "Bebida", "Cigarro", "Animal"]

@@ -2,7 +2,7 @@
 import numpy as np
 
 COMPLEX_FIGURES = [
-    # Maior fitness até agora: -151 -> [ 4 11  2 23 13 21 12 29 22  3  8 26 18 20 14  7  0  9  1  5 16  6 27 19 28 25 24 17 10 15]
+    # Maior fitness até agora: -151 -> [ 4, 11, 2, 23, 13, 21, 12, 29, 22, 3, 8, 26, 18, 20, 14, 7, 0, 9, 1, 5, 16, 6, 27, 19, 28, 25, 24, 17, 10, 15]
     # Config: NG: 100, NPM: 20, SPP: 150, KE: 20, CT: scattered, MT: random, MPG: 5
     [(16,  9), (28, 0), (20, 5), ( 4,  7), (26, 11), (26,  0), (25, 29), (16, 11), ( 3, 28), (22,  1),
      (22, 20), (26, 7), ( 4, 5), (12,  6), (16, 14), (26, 17), (29, 23), (11, 16), ( 8, 26), (14, 25),
@@ -19,7 +19,7 @@ if RANDOM_POINTS:
     if FIGURE >= 0:
         POINTS = COMPLEX_FIGURES[FIGURE]
     else:
-        amount_of_points = 20
+        amount_of_points = 30
         POINTS = []
         for i in range(amount_of_points):
             POINTS.append((

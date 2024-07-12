@@ -20,7 +20,7 @@ def fit(solution: ndarray, debug=False):
         dist += calculate_distance_between_points(a, b)
 
     not debug or print(dist)
-    return -dist
+    return 1 / dist
 
 
 def fitness_func(ga_instance: GA, solution: ndarray, solution_idx: int):

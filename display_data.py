@@ -21,6 +21,9 @@ def print_integers_as_matrix_of_bits(rows: List[int]):
 
 def print_matrix_as_dataframe(matrix: Matrix, columns: List[str], index: List[str]):
     from pandas import DataFrame
+    print(matrix)
+    print(columns)
+    print(index)
     print(DataFrame.from_records(matrix, columns=columns, index=index))
 
 

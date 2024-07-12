@@ -4,7 +4,7 @@ from typing import List
 
 from pygad import GA
 
-from convert_data import agglomerate_bits_from_bit_line
+from convert_data import to_matrix
 from display_data import print_matrix
 
 LINHAS = 3
@@ -12,7 +12,7 @@ COLUNAS = 7
 
 
 def fit(bit_line: List[int], debug=False):
-    rows = agglomerate_bits_from_bit_line(bit_line, 7)
+    rows = to_matrix(bit_line, 7)
     column_validity = [0] * COLUNAS
     row_validity = [0] * LINHAS
     column_sums = [0] * COLUNAS

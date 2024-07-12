@@ -1,31 +1,22 @@
 #  coding: utf-8
-from ga_qiEinstein import COLOR_SPACE, NACIONALITY_SPACE, DRINK_SPACE, CIGAR_SPACE, PET_SPACE
 from ga_qiEinstein.fit_func import fitness_func
 
-PYGAD_CONFIG: dict = {
-    # NG: Quantas gerações serão simuladas
-    "num_generations": 100,
-    # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
-    "num_parents_mating": 50,
-    # SPP: Quantas soluções terão por geração
-    "sol_per_pop": 200,
-    # KE: Elitismo (top X soluções será mantido)
-    "keep_elitism": 50,
-    # CT: Tipo do crossover
-    "crossover_type": "scattered",
-    # MT: Tipo da mutação
-    "mutation_type": 'random',
-    # MPG: Porcentagem de genes que serão mutados
-    "mutation_percent_genes": 6,
+SOL_PER_POP = 20
+NUM_GENES = 25
 
+BASE_CONFIG: dict = {
+    # NG: Quantas gerações serão simuladas
+    "num_generations": 50,
     # Função de avaliação
     "fitness_func": fitness_func,
     # Numero de parâmetros da função
-    "num_genes": 25,
+    "num_genes": NUM_GENES,
+    # SPP: Quantas soluções terão por geração
+    "sol_per_pop": SOL_PER_POP,
     # Tipo do gene
     "gene_type": int,
     # Espaço de busca do gene
-    "gene_space": [*COLOR_SPACE, *NACIONALITY_SPACE, *DRINK_SPACE, *CIGAR_SPACE, *PET_SPACE],
+    "gene_space": range(NUM_GENES),
     # Tipo de seleção dos pais
     # SSS significa "Steady-State Selection". Os piores cromossomos são substituídos pelos filhos gerados
     # pelo cruzamento dos melhores cromossomos
@@ -34,6 +25,33 @@ PYGAD_CONFIG: dict = {
     "mutation_by_replacement": True,
     # Permitir duplicatas
     "allow_duplicate_genes": False,
-    # Isto otimiza o programa. Se o fitness não mudar por X gerações, o programa para.
-    "stop_criteria": "saturate_40",
+    "stop_criteria": ["reach_0"],
+}
+
+FIRST_ROUND_CONFIG: dict = {
+    **BASE_CONFIG,
+    # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
+    "num_parents_mating": int(SOL_PER_POP * 0.1),
+    # KE: Elitismo (top X soluções será mantido)
+    "keep_elitism": int(SOL_PER_POP * 0.1),
+    # CT: Tipo do crossover ('single_point', 'two_points', 'uniform', 'scattered')
+    "crossover_type": "single_point",
+    # MPG: Porcentagem de genes que serão mutados
+    "mutation_percent_genes": 3,
+    # MT: Tipo da mutação ('random', 'swap', 'inversion', 'scramble', 'adaptive')
+    "mutation_type": 'random',
+ }
+
+SECOND_ROUND_CONFIG: dict = {
+    **BASE_CONFIG,
+    # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
+    "num_parents_mating": int(SOL_PER_POP * 0.75),
+    # KE: Elitismo (top X soluções será mantido)
+    "keep_elitism": int(SOL_PER_POP * 0.1),
+    # CT: Tipo do crossover ('single_point', 'two_points', 'uniform', 'scattered')
+    "crossover_type": "scattered",
+    # MPG: Porcentagem de genes que serão mutados
+    "mutation_percent_genes": 10,
+    # MT: Tipo da mutação ('random', 'swap', 'inversion', 'scramble', 'adaptive')
+    "mutation_type": 'random',
 }
