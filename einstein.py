@@ -9,7 +9,7 @@ from pygad import GA
 from convert_data import get_sorted_indexes, to_matrix, translate_matrix_values
 from display_data import print_matrix_as_dataframe
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
-from ga_qiEinstein.fit_func import VALUES_OCCURRENCE, fit
+from ga_qiEinstein.fit_func import FIRST_ERRORS, VALUES_OCCURRENCE, fit
 from ga_qiEinstein.pygad_config import FIRST_ROUND_CONFIG, SECOND_ROUND_CONFIG
 from utils import sort_dict_by_keys, sort_dict_by_values
 
@@ -28,42 +28,52 @@ def generate_report(runs_data: list):
         json.dump(data, f, indent=4)
 
 
-def main():
-    # First run
-    ga_instance = GA(**FIRST_ROUND_CONFIG)
-    ga_instance.run()
+def main(rounds_config):
+    last_elitism = None
+    rounds_data = []
+    gaint = None
+    
+    for conf in rounds_config:
+        if conf:
+            merged_conf = {**FIRST_ROUND_CONFIG, **conf}
+        else:
+            merged_conf = {**FIRST_ROUND_CONFIG}
 
-    last_generation = list(ga_instance.last_generation_offspring_crossover)
-    last_generation.extend(ga_instance.last_generation_elitism)
-    first_data = {
-        'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
-        'fitness': [int(x) for x in ga_instance.best_solutions_fitness]
-    }
-    VALUES_OCCURRENCE.clear()
+        gaint = GA(**merged_conf)
+        if last_elitism is not None:
+            gaint.initialize_population(
+                low=gaint.init_range_low,
+                high=gaint.init_range_high,
+                allow_duplicate_genes=gaint.allow_duplicate_genes,
+                mutation_by_replacement=True,
+                gene_type=gaint.gene_type
+            )
+            for i in range(conf['keep_elitism']):
+                gaint.population[i] = last_elitism[i]
+        
+        gaint.run()
+        last_elitism = gaint.last_generation_elitism 
 
-    # Second run
-    config = copy(SECOND_ROUND_CONFIG)
-    config['initial_population'] = last_generation
-    ga_instance = GA(**config)
-    ga_instance.run()
+        rounds_data.append({
+            'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
+            'last_ten_first_errors': FIRST_ERRORS[-10:],
+            'fitness': [int(x) for x in gaint.best_solutions_fitness]
+        })
 
-    second_data = {
-        'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
-        'fitness': [int(x) for x in ga_instance.best_solutions_fitness]
-    }
-    VALUES_OCCURRENCE.clear()
+        VALUES_OCCURRENCE.clear()
+        FIRST_ERRORS.clear()
 
-    a = ga_instance.best_solution()
-    best_solution = a[0]
-    best_solution_fitness = a[1]
+    bs = gaint.best_solution()
+    best_solution = bs[0]
+    best_solution_fitness = bs[1]
 
     data = {
         "sol": best_solution,
         "sol_fit": best_solution_fitness,
-        "first_data": first_data,
-        "second_data": second_data
+        "rounds_data": rounds_data
     }
-    return data, ga_instance
+
+    return data, gaint
 
 if __name__ == '__main__':
     # Crio pasta para os relatórios

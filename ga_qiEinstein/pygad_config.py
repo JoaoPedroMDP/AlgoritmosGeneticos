@@ -16,13 +16,13 @@ BASE_CONFIG: dict = {
     # Tipo do gene
     "gene_type": int,
     # Espaço de busca do gene
-    "gene_space": range(NUM_GENES),
+    "gene_space": range(NUM_GENES*50),
     # Tipo de seleção dos pais
     # SSS significa "Steady-State Selection". Os piores cromossomos são substituídos pelos filhos gerados
     # pelo cruzamento dos melhores cromossomos
     "parent_selection_type": "sss",
     # Substituir o gene mutado pelo gene substituto, e não apenas somar um valor random
-    "mutation_by_replacement": True,
+    "mutation_by_replacement": False,
     # Permitir duplicatas
     "allow_duplicate_genes": False,
     "stop_criteria": ["reach_0"],
