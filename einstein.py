@@ -1,27 +1,48 @@
 #  coding: utf-8
-from copy import copy
 import json
 import os
 from time import strftime, time
 import numpy as np
-from pygad import GA
+# from pygad import GA
 
 from convert_data import get_sorted_indexes, to_matrix, translate_matrix_values
 from display_data import print_matrix_as_dataframe
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
-from ga_qiEinstein.fit_func import FIRST_ERRORS, VALUES_OCCURRENCE, fit
-from ga_qiEinstein.pygad_config import FIRST_ROUND_CONFIG, SECOND_ROUND_CONFIG
+from ga_qiEinstein.fit_func import VALUES_OCCURRENCE, fit
+from ga_qiEinstein.pygad_config import CONFIG
+from ga_qiEinstein.custom_ga import CustomGA as GA
 from utils import sort_dict_by_keys, sort_dict_by_values
 
 DATE_TIME_STR = strftime("%Y-%m-%d_%H-%M-%S")
+
+def should_insert(solution_fitness: any, gaint: GA):
+    if max(solution_fitness) > gaint.fitness_threshold_to_insert:
+        return True
+
+    if gaint.generations_completed > gaint.num_generations * 0.9:
+        return True
+
+    return False
+
+def on_fitness(gaint: GA, solution_fitness):
+    size = len(gaint.population)
+    if gaint.fitness_threshold_to_insert and not gaint.elite_inserted:
+        if should_insert(solution_fitness, gaint):
+            print("Inserindo melhores soluções da última rodada")
+            best_index = np.argmin(max(solution_fitness))
+            for i in range(len(gaint.elite_to_insert)):
+                gaint.population[(i+best_index) % size] = gaint.elite_to_insert[i]
+                solution_fitness[(i+best_index) % size] = gaint.elite_fitness_to_insert[i]
+
+            gaint.elite_inserted = True
 
 def generate_report(runs_data: list):
     print("Gerando relatório")
 
     keys = ["num_parents_mating", "keep_elitism", "mutation_percent_genes", "mutation_type"]
     data = {
-        "first_run_config": {k: FIRST_ROUND_CONFIG[k] for k in keys},
-        "second_run_config": {k: SECOND_ROUND_CONFIG[k] for k in keys},
+        "first_run_config": {k: CONFIG[k] for k in keys},
+        "second_run_config": {k: CONFIG[k] for k in keys},
         "runs": runs_data
     }
     with open(f"reports/{DATE_TIME_STR}_report.json", "w") as f:
@@ -30,38 +51,41 @@ def generate_report(runs_data: list):
 
 def main(rounds_config):
     last_elitism = None
+    elite_fitness_to_insert = None
+    last_elitism_fitness_threshold = None
     rounds_data = []
     gaint = None
     
     for conf in rounds_config:
         if conf:
-            merged_conf = {**FIRST_ROUND_CONFIG, **conf}
+            merged_conf = {**CONFIG, **conf}
         else:
-            merged_conf = {**FIRST_ROUND_CONFIG}
+            merged_conf = {**CONFIG}
 
-        gaint = GA(**merged_conf)
+        gaint = GA(
+            **merged_conf, 
+            on_fitness=on_fitness
+        )
+
         if last_elitism is not None:
-            gaint.initialize_population(
-                low=gaint.init_range_low,
-                high=gaint.init_range_high,
-                allow_duplicate_genes=gaint.allow_duplicate_genes,
-                mutation_by_replacement=True,
-                gene_type=gaint.gene_type
-            )
-            for i in range(conf['keep_elitism']):
-                gaint.population[i] = last_elitism[i]
+            gaint.elite_to_insert = last_elitism
+            gaint.fitness_threshold_to_insert = last_elitism_fitness_threshold
+            gaint.elite_fitness_to_insert = elite_fitness_to_insert
         
         gaint.run()
-        last_elitism = gaint.last_generation_elitism 
+        last_elitism = gaint.last_generation_elitism
+        last_elitism_fitness_threshold = gaint.best_solution()[1]
+        elite_fitness_to_insert = list([fit(x) for x in last_elitism])
 
+        bs = gaint.best_solution()
         rounds_data.append({
+            'sol': bs[0],
+            'sol_fit': bs[1],
             'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
-            'last_ten_first_errors': FIRST_ERRORS[-10:],
             'fitness': [int(x) for x in gaint.best_solutions_fitness]
         })
 
         VALUES_OCCURRENCE.clear()
-        FIRST_ERRORS.clear()
 
     bs = gaint.best_solution()
     best_solution = bs[0]
@@ -73,7 +97,7 @@ def main(rounds_config):
         "rounds_data": rounds_data
     }
 
-    return data, gaint
+    return rounds_data, gaint
 
 if __name__ == '__main__':
     # Crio pasta para os relatórios

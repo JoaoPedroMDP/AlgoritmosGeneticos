@@ -28,7 +28,7 @@ BASE_CONFIG: dict = {
     "stop_criteria": ["reach_0"],
 }
 
-FIRST_ROUND_CONFIG: dict = {
+CONFIG: dict = {
     **BASE_CONFIG,
     # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
     "num_parents_mating": int(SOL_PER_POP * 0.1),
@@ -41,17 +41,3 @@ FIRST_ROUND_CONFIG: dict = {
     # MT: Tipo da mutação ('random', 'swap', 'inversion', 'scramble', 'adaptive')
     "mutation_type": 'random',
  }
-
-SECOND_ROUND_CONFIG: dict = {
-    **BASE_CONFIG,
-    # NPM: Quantidade de soluções escolhidas para participarem do conjunto de reprodução
-    "num_parents_mating": int(SOL_PER_POP * 0.75),
-    # KE: Elitismo (top X soluções será mantido)
-    "keep_elitism": int(SOL_PER_POP * 0.1),
-    # CT: Tipo do crossover ('single_point', 'two_points', 'uniform', 'scattered')
-    "crossover_type": "scattered",
-    # MPG: Porcentagem de genes que serão mutados
-    "mutation_percent_genes": 10,
-    # MT: Tipo da mutação ('random', 'swap', 'inversion', 'scramble', 'adaptive')
-    "mutation_type": 'random',
-}

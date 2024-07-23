@@ -10,10 +10,9 @@ from ga_qiEinstein import METADATA
 
 
 SHOULD_PRINT = False
-ERROR_WEIGHT = 2
+ERROR_WEIGHT = 1
 ABSOLUTE_ERROR_WEIGHT = 100
 VALUES_OCCURRENCE: dict = {}
-FIRST_ERRORS: list = []
 
 def process_value(value: int):
     absol = abs(value)
@@ -55,18 +54,13 @@ def locate_house(matrix: Matrix, row: str, item: str):
     
     return index
 
-def fit(bitline: np.ndarray, debug=False):
+def fit(bitline: np.ndarray):
     mtrx = to_matrix(bitline, 5)
-    SHOULD_PRINT and print("---------------------------")
-    SHOULD_PRINT and print_matrix(mtrx)
     mtrx = [get_sorted_indexes(row) for row in mtrx]
-    SHOULD_PRINT and print_matrix(mtrx)
-    SHOULD_PRINT and print("---------------------------")
-
-    first_error = 0
-
     error = 0
-
+    rules_broken = 0
+    rules_broken_step_increase = 0.2
+    
     # Posições reutilizáveis
     green_house_index = locate_house(mtrx, 'Cor', 'VERDE')
     dunhill_house_index = locate_house(mtrx, 'Cigarro', 'DUNHILL')
@@ -75,123 +69,136 @@ def fit(bitline: np.ndarray, debug=False):
     # Regra 1: Norueguês na casa 0
     norwish_house_index = locate_house(mtrx, 'Nacionalidade', 'NORUEGUES')
     l_error = ABSOLUTE_ERROR_WEIGHT * (norwish_house_index - 0) 
-    if l_error > 0 and first_error == 0:
-        first_error = 1
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 2: Inglês na casa vermelha
     red_house_index = locate_house(mtrx, 'Cor', 'VERMELHO')
     english_house_index = locate_house(mtrx, 'Nacionalidade', 'INGLES')
     l_error += ERROR_WEIGHT * abs(red_house_index - english_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 2
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 3: Sueco tem cachorro
     dog_house_index = locate_house(mtrx, 'Animal', 'CACHORRO')
     swedish_house_index = locate_house(mtrx, 'Nacionalidade', 'SUECO')
     l_error += ERROR_WEIGHT * abs(dog_house_index - swedish_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 3
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 4: O Dinamarquês toma chá
     tea_house_index = locate_house(mtrx, 'Bebida', 'CHA')
     danish_house_index = locate_house(mtrx, 'Nacionalidade', 'DINAMARQUES')
     l_error += ERROR_WEIGHT * abs(tea_house_index - danish_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 4
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 5: A casa verde está à esquerda da casa branca
     white_house_index = locate_house(mtrx, 'Cor', 'BRANCO')
     l_error += abs((white_house_index - 1) - green_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 5
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 6: O dono da casa verde bebe café
     coffee_house_index = locate_house(mtrx, 'Bebida', 'CAFE')
     l_error += ERROR_WEIGHT * abs(coffee_house_index - green_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 6
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 7: O homem que fuma Pall Mall tem pássaros
     pallmall_house_index = locate_house(mtrx, 'Cigarro', 'PALLMALL')
     bird_house_index = locate_house(mtrx, 'Animal', 'PASSARO')
     l_error += ERROR_WEIGHT * abs(pallmall_house_index - bird_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 7
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 8: O homem que vive na casa amarela fuma Dunhill
     yellow_house_index = locate_house(mtrx, 'Cor', 'AMARELO')
     l_error += ERROR_WEIGHT * abs(yellow_house_index - dunhill_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 8
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 9: O homem que vive na casa do meio bebe leite
     middle_house_index = 2
     milk_house_index = locate_house(mtrx, 'Bebida', 'LEITE')
     l_error += ABSOLUTE_ERROR_WEIGHT * abs(middle_house_index - milk_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 9
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 10: O homem que fuma Blends vive ao lado do que tem gatos
     cat_house_index = locate_house(mtrx, 'Animal', 'GATO')
     l_error += abs(abs(blend_house_index - cat_house_index) - 1)
-    if l_error > 0 and first_error == 0:
-        first_error = 10
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 11: O homem que tem cavalos vive ao lado do que fuma Dunhill
     horse_house_index = locate_house(mtrx, 'Animal', 'CAVALO')
     l_error += abs(abs(horse_house_index - dunhill_house_index) - 1)
-    if l_error > 0 and first_error == 0:
-        first_error = 11
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 12: O homem que fuma Blue Master bebe cerveja
     bluemaster_house_index = locate_house(mtrx, 'Cigarro', 'BLUEMASTER')
     beer_house_index = locate_house(mtrx, 'Bebida', 'CERVEJA')
     l_error += ERROR_WEIGHT * abs(bluemaster_house_index - beer_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 12
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 13: O alemão fuma Prince
     german_house_index = locate_house(mtrx, 'Nacionalidade', 'ALEMAO')
     prince_house_index = locate_house(mtrx, 'Cigarro', 'PRINCE')
     l_error += ERROR_WEIGHT * abs(german_house_index - prince_house_index)
-    if l_error > 0 and first_error == 0:
-        first_error = 13
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 14: O Norueguês vive ao lado da casa Azul
     norwegian_house_index = locate_house(mtrx, 'Nacionalidade', 'NORUEGUES')
     blue_house_index = locate_house(mtrx, 'Cor', 'AZUL')
     l_error += abs(abs(norwegian_house_index - blue_house_index) - 1)
-    if l_error > 0 and first_error == 0:
-        first_error = 14
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     # Regra 15: O homem que fuma Blends vive ao lado do que bebe água
     water_house_index = locate_house(mtrx, 'Bebida', 'AGUA')
     l_error += abs(abs(blend_house_index - water_house_index) - 1)
-    if l_error > 0 and first_error == 0:
-        first_error = 15
+    if l_error > 0:
+        rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
+        l_error *= rules_broken
     error += l_error
 
     SHOULD_PRINT and print(-error)
     add_value_occurrence(-error)
-    FIRST_ERRORS.append(first_error)
-
-    return -error, first_error
+    print(rules_broken)
+    return -error
 
 
 def fitness_func(ga_instance: GA, solution, solution_idx: int):
-    # TODO tentar adicionar o elitismo no meio da rodada, e não no final
-    return fit(solution)[0]
+    return fit(solution)
