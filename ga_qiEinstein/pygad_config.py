@@ -25,7 +25,6 @@ BASE_CONFIG: dict = {
     "mutation_by_replacement": False,
     # Permitir duplicatas
     "allow_duplicate_genes": False,
-    "stop_criteria": ["reach_0"],
 }
 
 CONFIG: dict = {

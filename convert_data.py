@@ -1,6 +1,6 @@
 #  coding: utf-8
 from copy import copy
-from typing import List
+from typing import Any, List
 
 from numpy import ndarray
 import numpy as np

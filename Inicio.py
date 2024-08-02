@@ -1,5 +1,6 @@
 import json
-from time import strftime
+from time import strftime, time
+import numpy as np
 import streamlit as st
 import plotly.express as pe
 from convert_data import get_sorted_indexes, to_dataframe, to_matrix, translate_matrix_values
@@ -7,15 +8,17 @@ from einstein import main as einstein_main
 import csv
 
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
+from ga_qiEinstein.custom_ga import CustomGA
 
 DATE_TIME_STR = strftime("%Y-%m-%d_%H-%M-%S")
 HISTORY_FILE = 'history_round_{}.csv'
 
+
 def plot_run(rounds_data):
     def plot_turn(turn, data, parent_node):
-        parent_node.markdown(turn)
         cols = parent_node.columns(2)
-
+        cols[0].markdown(turn)
+        cols[1].metric("Tempo", value="{}s".format(round(data['total_time_s'], 2)))
         cols[0].markdown('#### Evolução de fitness')
         fig = pe.line(
             x=list(range(1, len(data['fitness']) + 1)),
@@ -40,30 +43,16 @@ def plot_run(rounds_data):
         legend_font_size=18)
         cols[1].plotly_chart(fig, use_container_width=True)
 
-        if data['sol_fit'] > -4:
-            cols[0].markdown(f"#### Melhor solução")
+        if data['sol_fit'] > -5:
+            cols[1].markdown(f"#### Melhor solução")
             matrix = to_matrix(data['sol'], 5)
             sorted = [get_sorted_indexes(row) for row in matrix]
             translated = translate_matrix_values(sorted, TRANSLATION_DICTS)
             df = to_dataframe(translated, COLUMNS, ROWS)
-            cols[0].write(df)
+            cols[1].dataframe(df)
 
-    for i, round in enumerate(rounds_data):
-        plot_turn(f'### Rodada {i} (fitness: {round["sol_fit"]})', round, st)
-
-def show_configurations(data):
-    def configs(conf_data, parent, title):
-        parent.markdown(f'## {title}')
-        cols = parent.columns(2)
-        cols[0].metric('Número de pais', conf_data['num_parents_mating'])
-        cols[1].metric('Elitismo', conf_data['keep_elitism'])
-        cols[0].metric('Porcentagem de mutação', conf_data['mutation_percent_genes'])
-        cols[1].metric('Tipo de mutação', conf_data['mutation_type'])
-
-
-    for i, run in enumerate(data):
-        cols = st.columns(2)
-        configs(run, cols[0], f'Configurações da rodada {i}')
+    for i, round_data in enumerate(rounds_data):
+        plot_turn(f'### Rodada {i} (fitness: {round_data["sol_fit"]})', round_data, st)
 
 
 def round_config(round: str, global_config: dict = None):
@@ -140,6 +129,23 @@ def write_to_history(rounds_data: list[dict], configs: list[dict]):
         collect_round_data(round['rounds_data'], HISTORY_FILE.format(i), configs[i])
 
 
+def advance_progress_callback(progress_bar, total):
+    current = 0
+    start_time = time()
+
+    def advance(gaint: CustomGA):
+        # Preciso receber gaint como parametro pois essa função será chamada
+        # dentro do Pygad, e deve receber esse parâmetro
+        nonlocal current
+        nonlocal start_time
+        current += 1
+        progress_bar.progress(
+            current / total, 
+            text=f"Melhor fitness: {gaint.best_solution()[1]}, tempo total: {round(time() - start_time, 2)}s"
+        )
+ 
+    return advance
+
 def app():
     st.markdown("# Einstein")
 
@@ -147,12 +153,16 @@ def app():
     rounds_config = []
     st.markdown("## Configurações das rodadas")
     st.markdown("As configurações cascateam. Isso significa que o que for configurado na rodada 1 será usado como padrão para a rodada 2 e assim por diante, a não ser que uma nova configuração seja feita em rodadas posteriores")
+
     for i in range(round_count):
         with st.expander(f"## Rodada {i+1}"):
             if len(rounds_config) == 0:
-                rounds_config.append(round_config(f"r{i}_"))
+                config = round_config(f"r{i}_")
             else:
-                rounds_config.append(round_config(f"r{i}_", rounds_config[i-1]))
+                config = round_config(f"r{i}_", rounds_config[i-1])
+        
+        config['progress_bar'] = advance_progress_callback(st.progress(0), config['num_generations'])
+        rounds_config.append(config)
 
     if st.button("Rodar"):
         # Devolve outras coisas, só me interessa os dados (primeiro item)

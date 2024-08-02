@@ -6,7 +6,7 @@ import numpy as np
 # from pygad import GA
 
 from convert_data import get_sorted_indexes, to_matrix, translate_matrix_values
-from display_data import print_matrix_as_dataframe
+from display_data import print_matrix_as_dataframe, print_translated_matrix
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
 from ga_qiEinstein.fit_func import VALUES_OCCURRENCE, fit
 from ga_qiEinstein.pygad_config import CONFIG
@@ -19,7 +19,7 @@ def should_insert(solution_fitness: any, gaint: GA):
     if max(solution_fitness) > gaint.fitness_threshold_to_insert:
         return True
 
-    if gaint.generations_completed > gaint.num_generations * 0.9:
+    if gaint.generations_completed > gaint.num_generations * 1:
         return True
 
     return False
@@ -55,16 +55,19 @@ def main(rounds_config):
     last_elitism_fitness_threshold = None
     rounds_data = []
     gaint = None
-    
+
     for conf in rounds_config:
         if conf:
             merged_conf = {**CONFIG, **conf}
         else:
             merged_conf = {**CONFIG}
 
+        progress_bar = merged_conf.pop('progress_bar')
+
         gaint = GA(
             **merged_conf, 
-            on_fitness=on_fitness
+            on_fitness=on_fitness,
+            on_generation=progress_bar
         )
 
         if last_elitism is not None:
@@ -72,30 +75,25 @@ def main(rounds_config):
             gaint.fitness_threshold_to_insert = last_elitism_fitness_threshold
             gaint.elite_fitness_to_insert = elite_fitness_to_insert
         
+        start_time = time()
         gaint.run()
+        total_time = time() - start_time
         last_elitism = gaint.last_generation_elitism
-        last_elitism_fitness_threshold = gaint.best_solution()[1]
+        bs = gaint.best_solution()
+
+        last_elitism_fitness_threshold = bs[1]
         elite_fitness_to_insert = list([fit(x) for x in last_elitism])
 
-        bs = gaint.best_solution()
         rounds_data.append({
             'sol': bs[0],
             'sol_fit': bs[1],
+            'total_time_s': total_time,
             'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
             'fitness': [int(x) for x in gaint.best_solutions_fitness]
         })
 
         VALUES_OCCURRENCE.clear()
 
-    bs = gaint.best_solution()
-    best_solution = bs[0]
-    best_solution_fitness = bs[1]
-
-    data = {
-        "sol": best_solution,
-        "sol_fit": best_solution_fitness,
-        "rounds_data": rounds_data
-    }
 
     return rounds_data, gaint
 
@@ -148,9 +146,7 @@ if __name__ == '__main__':
             best_sol_avg += 1
             print(data['sol'])
             mtrx = to_matrix(data['sol'], 5)
-            mtrx = [get_sorted_indexes(row) for row in mtrx]
-            translated = translate_matrix_values(mtrx, TRANSLATION_DICTS)
-            print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
+            print_translated_matrix(mtrx, TRANSLATION_DICTS, COLUMNS, ROWS)
 
     print("Média de fitness: ", avg_sol_fit/num_of_executions)
     print("Menor fitness: ", min_sol_fit)

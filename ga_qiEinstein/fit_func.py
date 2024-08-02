@@ -5,8 +5,8 @@ import numpy as np
 from pygad import GA
 
 from convert_data import to_matrix, get_sorted_indexes
-from display_data import Matrix, print_matrix
-from ga_qiEinstein import METADATA
+from display_data import Matrix, print_translated_matrix
+from ga_qiEinstein import COLUMNS, METADATA, ROWS, TRANSLATION_DICTS
 
 
 SHOULD_PRINT = False
@@ -57,9 +57,10 @@ def locate_house(matrix: Matrix, row: str, item: str):
 def fit(bitline: np.ndarray):
     mtrx = to_matrix(bitline, 5)
     mtrx = [get_sorted_indexes(row) for row in mtrx]
+    
     error = 0
     rules_broken = 0
-    rules_broken_step_increase = 0.2
+    rules_broken_step_increase = 0
     
     # Posições reutilizáveis
     green_house_index = locate_house(mtrx, 'Cor', 'VERDE')
@@ -71,7 +72,7 @@ def fit(bitline: np.ndarray):
     l_error = ABSOLUTE_ERROR_WEIGHT * (norwish_house_index - 0) 
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 2: Inglês na casa vermelha
@@ -80,7 +81,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(red_house_index - english_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 3: Sueco tem cachorro
@@ -89,7 +90,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(dog_house_index - swedish_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 4: O Dinamarquês toma chá
@@ -98,7 +99,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(tea_house_index - danish_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 5: A casa verde está à esquerda da casa branca
@@ -106,7 +107,7 @@ def fit(bitline: np.ndarray):
     l_error += abs((white_house_index - 1) - green_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 6: O dono da casa verde bebe café
@@ -114,7 +115,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(coffee_house_index - green_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 7: O homem que fuma Pall Mall tem pássaros
@@ -123,7 +124,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(pallmall_house_index - bird_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 8: O homem que vive na casa amarela fuma Dunhill
@@ -131,7 +132,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(yellow_house_index - dunhill_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 9: O homem que vive na casa do meio bebe leite
@@ -140,7 +141,7 @@ def fit(bitline: np.ndarray):
     l_error += ABSOLUTE_ERROR_WEIGHT * abs(middle_house_index - milk_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 10: O homem que fuma Blends vive ao lado do que tem gatos
@@ -148,7 +149,7 @@ def fit(bitline: np.ndarray):
     l_error += abs(abs(blend_house_index - cat_house_index) - 1)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 11: O homem que tem cavalos vive ao lado do que fuma Dunhill
@@ -156,7 +157,7 @@ def fit(bitline: np.ndarray):
     l_error += abs(abs(horse_house_index - dunhill_house_index) - 1)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 12: O homem que fuma Blue Master bebe cerveja
@@ -165,7 +166,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(bluemaster_house_index - beer_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 13: O alemão fuma Prince
@@ -174,7 +175,7 @@ def fit(bitline: np.ndarray):
     l_error += ERROR_WEIGHT * abs(german_house_index - prince_house_index)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 14: O Norueguês vive ao lado da casa Azul
@@ -183,7 +184,7 @@ def fit(bitline: np.ndarray):
     l_error += abs(abs(norwegian_house_index - blue_house_index) - 1)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     # Regra 15: O homem que fuma Blends vive ao lado do que bebe água
@@ -191,12 +192,15 @@ def fit(bitline: np.ndarray):
     l_error += abs(abs(blend_house_index - water_house_index) - 1)
     if l_error > 0:
         rules_broken += 1 if rules_broken == 0 else rules_broken_step_increase
-        l_error *= rules_broken
+        l_error += rules_broken
     error += l_error
 
     SHOULD_PRINT and print(-error)
     add_value_occurrence(-error)
-    print(rules_broken)
+    
+    if error == 0:
+        print_translated_matrix(mtrx, TRANSLATION_DICTS, COLUMNS, ROWS)
+    
     return -error
 
 

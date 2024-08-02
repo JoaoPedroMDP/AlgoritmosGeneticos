@@ -1,7 +1,7 @@
 #  coding: utf-8
 from typing import List, Any, NewType, Union, Tuple
 
-from convert_data import integers_to_bits
+from convert_data import get_sorted_indexes, integers_to_bits, translate_matrix_values
 
 Matrix = NewType('Matrix', Union[List[List[Any]], List[Any]])
 Point = NewType('Point', Tuple[int, int])
@@ -21,10 +21,13 @@ def print_integers_as_matrix_of_bits(rows: List[int]):
 
 def print_matrix_as_dataframe(matrix: Matrix, columns: List[str], index: List[str]):
     from pandas import DataFrame
-    print(matrix)
-    print(columns)
-    print(index)
     print(DataFrame.from_records(matrix, columns=columns, index=index))
+
+
+def print_translated_matrix(mtrx, translation_dicts, columns, rows):
+    mtrx = [get_sorted_indexes(row) for row in mtrx]
+    translated = translate_matrix_values(mtrx, translation_dicts)
+    print_matrix_as_dataframe(translated, columns=columns, index=rows)
 
 
 def trace_route_between_points(points: List[Point]):
