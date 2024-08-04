@@ -3,15 +3,14 @@ import json
 import os
 from time import strftime, time
 import numpy as np
-# from pygad import GA
 
 from convert_data import get_sorted_indexes, to_matrix, translate_matrix_values
 from display_data import print_matrix_as_dataframe, print_translated_matrix
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
-from ga_qiEinstein.fit_func import VALUES_OCCURRENCE, fit
+from ga_qiEinstein.fit_func import ERROR_OCCURENCES, VALUES_OCCURRENCE, WEIGHTS, fit, reset_weights
 from ga_qiEinstein.pygad_config import CONFIG
 from ga_qiEinstein.custom_ga import CustomGA as GA
-from utils import sort_dict_by_keys, sort_dict_by_values
+from utils import sort_dict_by_keys
 
 DATE_TIME_STR = strftime("%Y-%m-%d_%H-%M-%S")
 
@@ -55,6 +54,10 @@ def main(rounds_config):
     last_elitism_fitness_threshold = None
     rounds_data = []
     gaint = None
+    
+    # Vou resetar os pesos
+    for key in WEIGHTS:
+        WEIGHTS[key] = 1
 
     for conf in rounds_config:
         if conf:
@@ -89,68 +92,18 @@ def main(rounds_config):
             'sol_fit': bs[1],
             'total_time_s': total_time,
             'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
-            'fitness': [int(x) for x in gaint.best_solutions_fitness]
+            'fitness': [int(x) for x in gaint.best_solutions_fitness],
+            "error_weights": WEIGHTS
         })
 
+        for key in list(ERROR_OCCURENCES.keys())[1:]:
+            error_percentage = ERROR_OCCURENCES[key]/ERROR_OCCURENCES[0]
+            new_weight = 15 * (error_percentage)
+            WEIGHTS[key] = new_weight
+
+        print(WEIGHTS)
+        ERROR_OCCURENCES.clear()
         VALUES_OCCURRENCE.clear()
 
 
     return rounds_data, gaint
-
-if __name__ == '__main__':
-    # Crio pasta para os relatórios
-    try:
-        os.mkdir(f"reports")
-    except FileExistsError:
-        pass
-
-    if False:
-        sol = np.array([1, 2, 5, 4, 3, 9, 7, 8, 6, 10, 11, 14, 15, 12, 13, 18, 16, 19, 20, 17, 23, 22, 24, 25, 21])
-        mtrx = to_matrix(sol, 5)
-        mtrx = [get_sorted_indexes(row) for row in mtrx]
-        translated = translate_matrix_values(mtrx, TRANSLATION_DICTS)
-        print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
-        print(fit(sol))
-        exit(1)
-    
-    num_of_executions = 2
-    
-    best_sol_avg = 0
-    avg_sol_fit = 0
-    min_sol_fit = 100
-    max_sol_fit = -100
-    avg_execution_time = 0
-    runs_data = []
-    # while sol_fit != 0:
-    for i in range(num_of_executions):
-        start_time = time()
-        data, ga_int = main()
-        end_time = time()
-        avg_sol_fit += data['sol_fit']
-        avg_execution_time = end_time - start_time
-        
-        runs_data.append({
-            "first_run": data['first_data'],
-            "second_run": data['second_data'],
-        })
-
-        if data['sol_fit'] < min_sol_fit:
-            min_sol_fit = data['sol_fit']
-        if data['sol_fit'] > max_sol_fit:
-            max_sol_fit = data['sol_fit']
-
-        print("Fitness: ", data['sol_fit'])
-        print("Tempo: ", end_time - start_time)
-        if data['sol_fit'] >= 0:
-            ga_int.plot_fitness()
-            best_sol_avg += 1
-            print(data['sol'])
-            mtrx = to_matrix(data['sol'], 5)
-            print_translated_matrix(mtrx, TRANSLATION_DICTS, COLUMNS, ROWS)
-
-    print("Média de fitness: ", avg_sol_fit/num_of_executions)
-    print("Menor fitness: ", min_sol_fit)
-    print("Maior fitness: ", max_sol_fit)
-    print("Media de melhores soluções: ", best_sol_avg/num_of_executions)
-    print("Tempo médio de execução: ", avg_execution_time)
-    generate_report(runs_data)
