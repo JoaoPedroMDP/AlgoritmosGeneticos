@@ -3,7 +3,7 @@ import json
 import os
 from time import strftime, time
 import numpy as np
-
+import streamlit as st
 from convert_data import get_sorted_indexes, to_matrix, translate_matrix_values
 from display_data import print_matrix_as_dataframe, print_translated_matrix
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
@@ -49,12 +49,19 @@ def generate_report(runs_data: list):
 
 
 def main(rounds_config):
+    # --- EST. 1: Esta é a estratégia de inserir o elitismo da ultima rodada quando a rodada atual atingiu o 
+    # --- fitness da ultima geração da rodada anterior.
     last_elitism = None
     elite_fitness_to_insert = None
     last_elitism_fitness_threshold = None
+
+    # --- EST 2. Esta é a estratégia de inserir toda a última população da rodada anterior
+    # --- como a população inicial da rodada atual.
+    # last_population = None
+
     rounds_data = []
     gaint = None
-    
+
     # Vou resetar os pesos
     for key in WEIGHTS:
         WEIGHTS[key] = 1
@@ -73,35 +80,49 @@ def main(rounds_config):
             on_generation=progress_bar
         )
 
+        # --- EST 1. 
         if last_elitism is not None:
             gaint.elite_to_insert = last_elitism
             gaint.fitness_threshold_to_insert = last_elitism_fitness_threshold
             gaint.elite_fitness_to_insert = elite_fitness_to_insert
-        
+
+        # --- EST 2.
+        # if last_population is not None:
+        #     gaint.population = last_population
+
         start_time = time()
         gaint.run()
         total_time = time() - start_time
+        # --- EST 1.
         last_elitism = gaint.last_generation_elitism
         bs = gaint.best_solution()
 
+        # --- EST 1.
         last_elitism_fitness_threshold = bs[1]
         elite_fitness_to_insert = list([fit(x) for x in last_elitism])
 
-        rounds_data.append({
+        # --- EST 2.
+        # last_population = gaint.population
+
+        error_copy = ERROR_OCCURENCES.copy()
+        error_copy.pop(0)
+        data = {
             'sol': bs[0],
             'sol_fit': bs[1],
             'total_time_s': total_time,
             'occurrences': sort_dict_by_keys(VALUES_OCCURRENCE),
             'fitness': [int(x) for x in gaint.best_solutions_fitness],
-            "error_weights": WEIGHTS
-        })
+            'weights': WEIGHTS.copy(),
+            'error_occurrences': error_copy,
+        }
 
         for key in list(ERROR_OCCURENCES.keys())[1:]:
             error_percentage = ERROR_OCCURENCES[key]/ERROR_OCCURENCES[0]
-            new_weight = 15 * (error_percentage)
-            WEIGHTS[key] = new_weight
+            WEIGHTS[key] = 1 + (WEIGHTS[key] * error_percentage)
+            data['error_occurrences'][key] = error_percentage * 100
 
         print(WEIGHTS)
+        rounds_data.append(data)
         ERROR_OCCURENCES.clear()
         VALUES_OCCURRENCE.clear()
 

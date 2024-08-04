@@ -9,7 +9,6 @@ from display_data import Matrix, print_translated_matrix
 from ga_qiEinstein import COLUMNS, METADATA, ROWS, TRANSLATION_DICTS
 
 
-ABSOLUTE_ERROR_WEIGHT = 100
 VALUES_OCCURRENCE: dict = {}
 ERROR_OCCURENCES: dict = {}
 WEIGHTS: dict = {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 1, 7: 1, 8: 1, 9: 1, 10: 1, 11: 1, 12: 1, 13: 1, 14: 1, 15: 1}
@@ -51,7 +50,7 @@ def fit(bitline: np.ndarray):
     mtrx = [get_sorted_indexes(row) for row in mtrx]
     error = 0
     rule = 0
-    print(WEIGHTS)
+
     # Posições reutilizáveis
     green_house_index = locate_house(mtrx, 'Cor', 'VERDE')
     dunhill_house_index = locate_house(mtrx, 'Cigarro', 'DUNHILL')

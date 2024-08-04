@@ -44,12 +44,36 @@ def plot_run(rounds_data):
         cols[1].plotly_chart(fig, use_container_width=True)
 
         if data['sol_fit'] > -5:
-            cols[1].markdown(f"#### Melhor solução")
+            parent_node.markdown(f"#### Melhor solução")
             matrix = to_matrix(data['sol'], 5)
             sorted = [get_sorted_indexes(row) for row in matrix]
             translated = translate_matrix_values(sorted, TRANSLATION_DICTS)
             df = to_dataframe(translated, COLUMNS, ROWS)
-            cols[1].dataframe(df)
+            parent_node.dataframe(df)
+
+        # Histograma de pesos
+        cols[0].markdown('#### Pesos')
+        fig = pe.bar(
+            x=list(data['weights'].keys()),
+            y=list(data['weights'].values()),
+            labels={'x': 'Regra', 'y': 'Peso'}
+        )
+        fig.update_layout(
+        uniformtext_minsize=18, uniformtext_mode='hide',
+        legend_font_size=18)
+        cols[0].plotly_chart(fig)
+
+        # Histograma de erros
+        cols[1].markdown('#### Ocorrências de erros')
+        fig = pe.bar(
+            x=list(data['error_occurrences'].keys()),
+            y=list(data['error_occurrences'].values()),
+            labels={'x': 'Regra', 'y': 'Porc. Erros'}
+        )
+        fig.update_layout(
+        uniformtext_minsize=18, uniformtext_mode='hide',
+        legend_font_size=18)
+        cols[1].plotly_chart(fig)
 
     for i, round_data in enumerate(rounds_data):
         plot_turn(f'### Rodada {i} (fitness: {round_data["sol_fit"]})', round_data, st)
