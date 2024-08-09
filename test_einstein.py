@@ -12,3 +12,5 @@ mtrx = [get_sorted_indexes(row) for row in mtrx]
 translated = translate_matrix_values(mtrx, TRANSLATION_DICTS)
 print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
 print(fit(sol))
+
+SOLUTION = translated

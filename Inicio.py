@@ -3,10 +3,13 @@ from time import strftime, time
 import numpy as np
 import streamlit as st
 import plotly.express as pe
+from plotly import tools
 from convert_data import get_sorted_indexes, to_dataframe, to_matrix, translate_matrix_values
 from einstein import main as einstein_main
 import csv
+import plotly.graph_objects as go
 
+from test_einstein import SOLUTION
 from ga_qiEinstein import COLUMNS, ROWS, TRANSLATION_DICTS
 from ga_qiEinstein.custom_ga import CustomGA
 
@@ -14,7 +17,7 @@ DATE_TIME_STR = strftime("%Y-%m-%d_%H-%M-%S")
 HISTORY_FILE = 'history_round_{}.csv'
 
 
-def plot_run(rounds_data):
+def plot_run(data):
     def plot_turn(turn, data, parent_node):
         cols = parent_node.columns(2)
         cols[0].markdown(turn)
@@ -43,39 +46,58 @@ def plot_run(rounds_data):
         legend_font_size=18)
         cols[1].plotly_chart(fig, use_container_width=True)
 
-        if data['sol_fit'] > -5:
-            parent_node.markdown(f"#### Melhor solução")
-            matrix = to_matrix(data['sol'], 5)
-            sorted = [get_sorted_indexes(row) for row in matrix]
-            translated = translate_matrix_values(sorted, TRANSLATION_DICTS)
-            df = to_dataframe(translated, COLUMNS, ROWS)
-            parent_node.dataframe(df)
+        parent_node.markdown(f"#### Melhor solução")
+        matrix = to_matrix(data['sol'], 5)
+        sorted = [get_sorted_indexes(row) for row in matrix]
+        translated = translate_matrix_values(sorted, TRANSLATION_DICTS)
+        df = to_dataframe(translated, COLUMNS, ROWS)
 
-        # Histograma de pesos
-        cols[0].markdown('#### Pesos')
-        fig = pe.bar(
-            x=list(data['weights'].keys()),
-            y=list(data['weights'].values()),
-            labels={'x': 'Regra', 'y': 'Peso'}
-        )
-        fig.update_layout(
+        def custom_styling():
+            row = 0
+            def style(*args, **kwargs):
+                nonlocal row
+                print(row)
+                styles = ['background-color: lightgreen; color: black' if x == SOLUTION[row][i] else '' for i, x in enumerate(args[0])]
+                row += 1
+                return styles
+            
+            return style
+        df = df.style.apply(custom_styling(), axis=1)
+        
+        parent_node.table(df)
+
+    cols = st.columns(2)
+    # Histograma de pesos
+    cols[0].markdown('#### Pesos')
+    weights = data['weight_history']
+    z = [list(x.values()) for x in weights]
+    fig = go.Figure(data=[go.Surface(z=z)])
+    fig.update_layout(
         uniformtext_minsize=18, uniformtext_mode='hide',
-        legend_font_size=18)
-        cols[0].plotly_chart(fig)
+        legend_font_size=18, height=800)
+    fig.update_scenes(
+        xaxis_title='X - Regra',
+        yaxis_title='Y - Geração',
+        zaxis_title='Z - Peso'
+    )
+    cols[0].plotly_chart(fig)
 
-        # Histograma de erros
-        cols[1].markdown('#### Ocorrências de erros')
-        fig = pe.bar(
-            x=list(data['error_occurrences'].keys()),
-            y=list(data['error_occurrences'].values()),
-            labels={'x': 'Regra', 'y': 'Porc. Erros'}
-        )
-        fig.update_layout(
+    # Histograma de erros
+    cols[1].markdown('#### Erros')
+    errors = data['error_history']
+    z = [list(x.values()) for x in errors]
+    fig = go.Figure(data=[go.Surface(z=z)])
+    fig.update_layout(
         uniformtext_minsize=18, uniformtext_mode='hide',
-        legend_font_size=18)
-        cols[1].plotly_chart(fig)
+        legend_font_size=18, height=800)
+    fig.update_scenes(
+        xaxis_title='X - Regra',
+        yaxis_title='Y - Geração',
+        zaxis_title='Z - Erro'
+    )
+    cols[1].plotly_chart(fig)
 
-    for i, round_data in enumerate(rounds_data):
+    for i, round_data in enumerate(data['rounds_data']):
         plot_turn(f'### Rodada {i} (fitness: {round_data["sol_fit"]})', round_data, st)
 
 
@@ -165,7 +187,7 @@ def advance_progress_callback(progress_bar, total):
         current += 1
         progress_bar.progress(
             current / total, 
-            text=f"Melhor fitness: {gaint.best_solution()[1]}, tempo total: {round(time() - start_time, 2)}s"
+            text=f"{current} -> Melhor fitness: {gaint.best_solution()[1]}, tempo total: {round(time() - start_time, 2)}s"
         )
  
     return advance
@@ -190,8 +212,8 @@ def app():
 
     if st.button("Rodar"):
         # Devolve outras coisas, só me interessa os dados (primeiro item)
-        rounds_data = einstein_main(rounds_config)[0]
-        plot_run(rounds_data)
+        data = einstein_main(rounds_config)[0]
+        plot_run(data)
 
 
 if __name__ == '__main__':
