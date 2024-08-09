@@ -39,53 +39,47 @@ def build_on_generation(progress_bar):
         ERRORS_HISTORY.append(errors)
         
         for key in list(errors.keys()):
-            # WEIGHTS[key] = errors[key] * 2
-            error_percentage = errors[key]/total
-            new_weight = 15 * error_percentage
+            WEIGHTS[key] = errors[key] * 2
+            # error_percentage = errors[key]/total
+            # new_weight = 15 * error_percentage
 
-            if new_weight > 1:
-                WEIGHTS[key] = new_weight
+            # if new_weight > 1:
+            #     WEIGHTS[key] = new_weight
 
     return on_generation
 
 
-def main(rounds_config):    
-    chromos_to_insert = None
-    chromos_fit_to_insert = []
-    fitness_threshold_to_insert = None
-
+def main(rounds_config):
     rounds_data = []
     gaint = None
+    best_individuals = []
 
     # Vou resetar os pesos
     for key in WEIGHTS:
         WEIGHTS[key] = 1
 
-    for conf in rounds_config:
+    for i, conf in enumerate(rounds_config):
         if conf:
             merged_conf = {**CONFIG, **conf}
         else:
             merged_conf = {**CONFIG}
 
         progress_bar = merged_conf.pop('progress_bar')
-
         gaint = GA(
             **merged_conf, 
             on_fitness=on_fitness,
             on_generation=build_on_generation(progress_bar),
         )
-        gaint.fitness_threshold_to_insert = fitness_threshold_to_insert
 
-        if chromos_to_insert:
-            gaint.chromossomes_to_insert = chromos_to_insert
-            gaint.chromossomes_fitness_to_insert = chromos_fit_to_insert
-            gaint.fitness_threshold_to_insert = fitness_threshold_to_insert
+        if i == len(rounds_config) - 1:
+            gaint.initial_population = best_individuals
 
         start_time = time()
         gaint.run()
         total_time = time() - start_time
         bs = gaint.best_solution()
-        
+        best_individuals.append(bs[0])
+
         data = {
             'sol': bs[0],
             'sol_fit': bs[1],
@@ -97,14 +91,6 @@ def main(rounds_config):
         fits_and_indexes = [tup for tup in zip(gaint.population, gaint.last_generation_fitness)]
         fits_and_indexes = sorted(fits_and_indexes, key=lambda x: x[1], reverse=True)
 
-        chromos_to_insert = []
-        error_occurrences = {}
-        for chromossome, _ in fits_and_indexes[:5]:
-            # Aqui preciso calcular o fitness do cromossomo pois os pesos já mudaram
-            fitness = fit(chromossome, error_occurrences)
-            chromos_to_insert.append(chromossome)
-            chromos_fit_to_insert.append(fitness)
-        fitness_threshold_to_insert = chromos_fit_to_insert[0]
 
         rounds_data.append(data)
         VALUES_OCCURRENCE.clear()
