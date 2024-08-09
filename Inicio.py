@@ -66,36 +66,28 @@ def plot_run(data):
         
         parent_node.table(df)
 
-    cols = st.columns(2)
+    st.markdown("## Gráfico de evolução dos erros/pesos")
+    # cols = st.columns(2)
     # Histograma de pesos
-    cols[0].markdown('#### Pesos')
+    # cols[0].markdown('#### Pesos')
     weights = data['weight_history']
-    z = [list(x.values()) for x in weights]
-    fig = go.Figure(data=[go.Surface(z=z)])
-    fig.update_layout(
-        uniformtext_minsize=18, uniformtext_mode='hide',
-        legend_font_size=18, height=800)
-    fig.update_scenes(
-        xaxis_title='X - Regra',
-        yaxis_title='Y - Geração',
-        zaxis_title='Z - Peso'
-    )
-    cols[0].plotly_chart(fig)
-
-    # Histograma de erros
-    cols[1].markdown('#### Erros')
     errors = data['error_history']
-    z = [list(x.values()) for x in errors]
-    fig = go.Figure(data=[go.Surface(z=z)])
+    # O + 10 é pra deslocar o gráfico pra cima
+    z_weights = np.array([list(x.values()) for x in weights]) + 10
+    z_errors = np.array([list(x.values()) for x in errors])
+
+    fig = go.Figure(data=[go.Surface(z=z_errors, name="Erros"), go.Surface(z=z_weights, name="Pesos", opacity=0.9)])
     fig.update_layout(
         uniformtext_minsize=18, uniformtext_mode='hide',
         legend_font_size=18, height=800)
+    
     fig.update_scenes(
         xaxis_title='X - Regra',
         yaxis_title='Y - Geração',
-        zaxis_title='Z - Erro'
+        zaxis_title='Z - Erro/Peso'
     )
-    cols[1].plotly_chart(fig)
+    
+    st.plotly_chart(fig)
 
     for i, round_data in enumerate(data['rounds_data']):
         plot_turn(f'### Rodada {i} (fitness: {round_data["sol_fit"]})', round_data, st)
@@ -185,10 +177,11 @@ def advance_progress_callback(progress_bar, total):
         nonlocal current
         nonlocal start_time
         current += 1
-        progress_bar.progress(
-            current / total, 
-            text=f"{current} -> Melhor fitness: {gaint.best_solution()[1]}, tempo total: {round(time() - start_time, 2)}s"
-        )
+        text = f"{current} -> Melhor fitness: {gaint.best_solution()[1]}, tempo total: {round(time() - start_time, 2)}s"
+        if gaint.chromossomes_inserted:
+            text += " (cromossomos anteriores inseridos)"
+
+        progress_bar.progress(current / total, text=text)
  
     return advance
 
@@ -201,7 +194,7 @@ def app():
     st.markdown("As configurações cascateam. Isso significa que o que for configurado na rodada 1 será usado como padrão para a rodada 2 e assim por diante, a não ser que uma nova configuração seja feita em rodadas posteriores")
 
     for i in range(round_count):
-        with st.expander(f"## Rodada {i+1}"):
+        with st.expander(f"## Rodada {i}"):
             if len(rounds_config) == 0:
                 config = round_config(f"r{i}_")
             else:

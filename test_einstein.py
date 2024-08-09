@@ -10,7 +10,7 @@ sol = np.array([1, 2, 5, 4, 3, 9, 7, 8, 6, 10, 11, 14, 15, 12, 13, 18, 16, 19, 2
 mtrx = to_matrix(sol, 5)
 mtrx = [get_sorted_indexes(row) for row in mtrx]
 translated = translate_matrix_values(mtrx, TRANSLATION_DICTS)
-print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
-print(fit(sol))
+# print_matrix_as_dataframe(translated, columns=COLUMNS, index=ROWS)
+# print(fit(sol))
 
 SOLUTION = translated

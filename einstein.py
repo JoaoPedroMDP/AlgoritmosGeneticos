@@ -16,7 +16,7 @@ def on_fitness(gaint: GA, solution_fitness):
     size = len(gaint.population)
     if not gaint.chromossomes_inserted and \
         gaint.chromossomes_to_insert and \
-        (gaint.generation_percent_to_insert * gaint.num_generations <= gaint.generations_completed):
+        (gaint.fitness_threshold_to_insert <= max(solution_fitness)):
         
         print("Inserindo cromossomos")
         best_index = np.argmin(max(solution_fitness))
@@ -39,7 +39,7 @@ def build_on_generation(progress_bar):
         ERRORS_HISTORY.append(errors)
         
         for key in list(errors.keys()):
-            # WEIGHTS[key] = errors[key]
+            # WEIGHTS[key] = errors[key] * 2
             error_percentage = errors[key]/total
             new_weight = 15 * error_percentage
 
@@ -52,7 +52,7 @@ def build_on_generation(progress_bar):
 def main(rounds_config):    
     chromos_to_insert = None
     chromos_fit_to_insert = []
-    generation_percent_to_insert = 0.5
+    fitness_threshold_to_insert = None
 
     rounds_data = []
     gaint = None
@@ -74,11 +74,12 @@ def main(rounds_config):
             on_fitness=on_fitness,
             on_generation=build_on_generation(progress_bar),
         )
-        gaint.generation_percent_to_insert = generation_percent_to_insert
+        gaint.fitness_threshold_to_insert = fitness_threshold_to_insert
 
         if chromos_to_insert:
             gaint.chromossomes_to_insert = chromos_to_insert
             gaint.chromossomes_fitness_to_insert = chromos_fit_to_insert
+            gaint.fitness_threshold_to_insert = fitness_threshold_to_insert
 
         start_time = time()
         gaint.run()
@@ -99,9 +100,11 @@ def main(rounds_config):
         chromos_to_insert = []
         error_occurrences = {}
         for chromossome, _ in fits_and_indexes[:5]:
+            # Aqui preciso calcular o fitness do cromossomo pois os pesos já mudaram
             fitness = fit(chromossome, error_occurrences)
             chromos_to_insert.append(chromossome)
             chromos_fit_to_insert.append(fitness)
+        fitness_threshold_to_insert = chromos_fit_to_insert[0]
 
         rounds_data.append(data)
         VALUES_OCCURRENCE.clear()
